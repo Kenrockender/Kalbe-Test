@@ -1,10 +1,11 @@
-from fastapi import APIRouter, File, UploadFile
+from fastapi import APIRouter, File, Request, UploadFile
 
 from app.services.fasta import parse_and_validate
 from app.services.reference import get_reference
 from app.services.alignment import align_sequences
 from app.services.translation import translate_sequence
 from app.services.effects import annotate_variant_effects
+from app.services.upload import read_single_fasta_upload
 from app.schemas import (
     AnalyzeResponse,
     AlignmentInfoModel,
@@ -16,8 +17,8 @@ router = APIRouter()
 
 
 @router.post("/analyze", response_model=AnalyzeResponse)
-async def analyze_endpoint(file: UploadFile = File(...)):
-    content = await file.read()
+async def analyze_endpoint(request: Request, file: UploadFile = File(...)):
+    content = await read_single_fasta_upload(request, file)
 
     sequence_id, sequence = parse_and_validate(content)
     reference_id, ref_seq = get_reference()

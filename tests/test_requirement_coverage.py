@@ -71,6 +71,20 @@ def test_endpoints_enforce_sequence_length_limit(endpoint: str):
     assert response.json()["error"] == "sequence_too_long"
 
 
+@pytest.mark.parametrize("endpoint", ["/api/align", "/api/translate", "/api/analyze"])
+def test_endpoints_reject_multiple_uploaded_files(endpoint: str):
+    response = client.post(
+        endpoint,
+        files=[
+            ("file", ("first.fasta", b">first\nATG", "text/plain")),
+            ("file", ("second.fasta", b">second\nTAA", "text/plain")),
+        ],
+    )
+
+    assert response.status_code == 422
+    assert response.json()["error"] == "multiple_files"
+
+
 def test_translate_endpoint_handles_n_codons_and_incomplete_final_codon():
     # N dalam kodon jadi X, kodon tidak lengkap di akhir diabaikan
     response = client.post(

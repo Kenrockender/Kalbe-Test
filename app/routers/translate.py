@@ -1,20 +1,22 @@
-from fastapi import APIRouter, File, UploadFile, Form
+from fastapi import APIRouter, File, Request, UploadFile, Form
 from typing import Optional
 
 from app.services.fasta import parse_and_validate
 from app.services.translation import translate_sequence
 from app.schemas import TranslateResponse
 from app.errors import ValidationError
+from app.services.upload import read_single_fasta_upload
 
 router = APIRouter()
 
 
 @router.post("/translate", response_model=TranslateResponse)
 async def translate_endpoint(
+    request: Request,
     file: UploadFile = File(...),
     frame: Optional[str] = Form("1")
 ):
-    content = await file.read()
+    content = await read_single_fasta_upload(request, file)
 
     sequence_id, sequence = parse_and_validate(content)
 
