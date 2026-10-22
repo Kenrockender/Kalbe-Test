@@ -1,4 +1,4 @@
-from typing import List
+from typing import List, Optional
 from pydantic import BaseModel, Field
 
 
@@ -40,6 +40,25 @@ class TranslateResponse(BaseModel):
     protein: str
     length: int
     has_stop_codon: bool
+
+
+# varian yang sudah dikasih anotasi efek
+class VariantEffectModel(VariantModel):
+    effect: Optional[str] = Field(None, description="efek varian: synonymous, missense, dll")
+    codon: Optional[int] = Field(None, description="nomor kodon, 1-based")
+    ref_codon: Optional[str] = Field(None, description="kodon referensi")
+    alt_codon: Optional[str] = Field(None, description="kodon alternatif")
+    ref_aa: Optional[str] = Field(None, description="asam amino referensi")
+    alt_aa: Optional[str] = Field(None, description="asam amino alternatif")
+    aa_change: Optional[str] = Field(None, description="notasi perubahan asam amino, contoh: K59N")
+    notes: Optional[str] = Field(None, description="catatan tambahan")
+
+
+# response untuk /api/analyze, extends AlignResponse
+class AnalyzeResponse(AlignResponse):
+    query_translation: TranslationModel
+    reference_translation: TranslationModel
+    variants: List[VariantEffectModel]  # type: ignore
 
 
 # format response kalau ada error

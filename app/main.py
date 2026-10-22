@@ -5,7 +5,7 @@ from fastapi.staticfiles import StaticFiles
 
 from app.errors import ValidationError
 from app.services.reference import load_reference
-from app.routers import align, translate
+from app.routers import align, translate, analyze
 
 
 app = FastAPI(
@@ -54,6 +54,7 @@ async def request_validation_error_handler(request: Request, exc: RequestValidat
 # daftarkan semua router dengan prefix /api
 app.include_router(align.router, prefix="/api", tags=["align"])
 app.include_router(translate.router, prefix="/api", tags=["translate"])
+app.include_router(analyze.router, prefix="/api", tags=["analyze"])
 
 
 @app.get("/")
@@ -67,5 +68,5 @@ async def api_root():
     return {
         "message": "DNA Sequence Analysis API",
         "docs": "/docs",
-        "endpoints": ["/api/align", "/api/translate"]
+        "endpoints": ["/api/align", "/api/translate", "/api/analyze"]
     }
