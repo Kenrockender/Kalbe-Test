@@ -1,3 +1,5 @@
+from contextlib import asynccontextmanager
+
 from fastapi import FastAPI, Request
 from fastapi.responses import JSONResponse, RedirectResponse
 from fastapi.exceptions import RequestValidationError
@@ -8,21 +10,24 @@ from app.services.reference import load_reference
 from app.routers import align, translate, analyze
 
 
+@asynccontextmanager
+async def lifespan(_: FastAPI):
+    # load referensi sekali saat aplikasi mulai menerima request
+    load_reference()
+    print("Reference sequence loaded successfully")
+    yield
+
+
 app = FastAPI(
     title="DNA Sequence Analysis API",
     description="Align DNA sequences and translate to protein",
-    version="1.0.0"
+    version="1.0.0",
+    lifespan=lifespan,
 )
 
 # serve file static (HTML, JS, CSS) dari folder /static
 app.mount("/static", StaticFiles(directory="static"), name="static")
 
-
-@app.on_event("startup")
-async def startup_event():
-    # load referensi sekali waktu server nyala
-    load_reference()
-    print("Reference sequence loaded successfully")
 
 @app.exception_handler(ValidationError)
 async def validation_error_handler(request: Request, exc: ValidationError):
